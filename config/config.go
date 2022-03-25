@@ -198,6 +198,16 @@ type (
 			Hostname     string
 		}
 
+		Linode struct {
+			Token    string `envconfig:"DRONE_LINODE_TOKEN"`
+			Image    string `envconfig:"DRONE_LINODE_IMAGE"`
+			Type     string `envconfig:"DRONE_LINODE_TYPE"`
+			RootPass string `envconfig:"DRONE_LINODE_ROOT_PASS"`
+			SSHKey   string `envconfig:"DRONE_LINODE_SSHKEY"`
+			Region   string `envconfig:"DRONE_LINODE_REGION"`
+			Tags     []string
+		}
+
 		OpenStack struct {
 			Region        string `envconfig:"OS_REGION_NAME"`
 			Image         string

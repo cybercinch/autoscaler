@@ -17,6 +17,7 @@ import (
 	"github.com/drone/autoscaler/drivers/digitalocean"
 	"github.com/drone/autoscaler/drivers/google"
 	"github.com/drone/autoscaler/drivers/hetznercloud"
+	"github.com/drone/autoscaler/drivers/linode"
 	"github.com/drone/autoscaler/drivers/openstack"
 	"github.com/drone/autoscaler/drivers/packet"
 	"github.com/drone/autoscaler/drivers/scaleway"
@@ -258,6 +259,15 @@ func setupProvider(c config.Config) (autoscaler.Provider, error) {
 			digitalocean.WithToken(c.DigitalOcean.Token),
 			digitalocean.WithPrivateIP(c.DigitalOcean.PrivateIP),
 			digitalocean.WithTags(c.DigitalOcean.Tags...),
+		), nil
+	case c.Linode.Token != "":
+		return linode.New(
+			linode.WithToken(c.Linode.Token),
+			linode.WithRegion(c.Linode.Region),
+			linode.WithImage(c.Linode.Image),
+			linode.WithType(c.Linode.Type),
+			linode.WithRootPass(c.Linode.RootPass),
+			linode.WithTags(c.Linode.Tags...),
 		), nil
 	case c.Scaleway.AccessKey != "":
 		return scaleway.New(

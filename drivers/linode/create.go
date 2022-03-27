@@ -30,7 +30,7 @@ func (p *provider) Create(ctx context.Context, opts autoscaler.InstanceCreateOpt
 		p.setup(ctx)
 	})
 
-	name := strings.ToLower(opts.Name) + ".drone-agent.internal"
+	name := strings.ToLower(opts.Name)
 
 	logger := logger.FromContext(ctx).
 		WithField("image", p.image).
@@ -89,6 +89,7 @@ func (p *provider) Create(ctx context.Context, opts autoscaler.InstanceCreateOpt
 					logger.Debug("Polled Instance ID = %d\n", poll_instance.ID)
 					logger.Debug("%v", poll_instance)
 					if poll_instance.Status == "running" {
+						// The server has finished provisioning
 						break poller
 					}
 

@@ -8,6 +8,7 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"text/template"
 
 	"github.com/drone/autoscaler"
 	"github.com/linode/linodego"
@@ -25,7 +26,9 @@ type provider struct {
 	image         string
 	ssh_key       string
 	root_pass     string
+	stackscript   string
 	privateIP     bool
+	userdata      *template.Template
 	tags          []string
 }
 
@@ -42,7 +45,13 @@ func New(opts ...Option) autoscaler.Provider {
 		p.instance_type = "g6-standard-1"
 	}
 	if p.image == "" {
-		p.image = "private/15818922"
+		p.image = "linode/ubuntu20.04"
+	}
+	if p.stackscript == "" {
+		p.stackscript = "993696"
+	}
+	if p.userdata == nil {
+		p.userdata = userdataT
 	}
 	return p
 }

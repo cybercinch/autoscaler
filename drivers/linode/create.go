@@ -5,7 +5,9 @@
 package linode
 
 import (
+	"bytes"
 	"context"
+	b64 "encoding/base64"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +32,12 @@ func (p *provider) Create(ctx context.Context, opts autoscaler.InstanceCreateOpt
 		p.setup(ctx)
 	})
 
+	buf := new(bytes.Buffer)
+	err := p.userdata.Execute(buf, &opts)
+	if err != nil {
+		return nil, err
+	}
+
 	name := strings.ToLower(opts.Name)
 
 	logger := logger.FromContext(ctx).
@@ -50,13 +58,19 @@ func (p *provider) Create(ctx context.Context, opts autoscaler.InstanceCreateOpt
 
 	client := newClient(ctx, p.token)
 
+	stack_id, err := strconv.ParseInt(p.stackscript, 0, 32)
+	userdata_map := make(map[string]string)
+	userdata_map["userdata"] = b64.StdEncoding.EncodeToString([]byte(buf.String()))
+
 	linode, err := client.CreateInstance(ctx, linodego.InstanceCreateOptions{
-		Region:         p.region,
-		Type:           p.instance_type,
-		Label:          name,
-		Image:          p.image,
-		AuthorizedKeys: []string{p.ssh_key},
-		RootPass:       p.root_pass,
+		Region:          p.region,
+		Type:            p.instance_type,
+		Label:           name,
+		Image:           p.image,
+		StackScriptID:   int(stack_id),
+		StackScriptData: userdata_map,
+		AuthorizedKeys:  []string{p.ssh_key},
+		RootPass:        p.root_pass,
 	})
 
 	if err != nil {

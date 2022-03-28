@@ -7,37 +7,35 @@ package linode
 import "github.com/drone/autoscaler/drivers/internal/userdata"
 
 var userdataT = userdata.Parse(`#cloud-config
-write_files:
-  - path: /etc/systemd/system/docker.service.d/override.conf
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=/usr/bin/dockerd
-  - path: /etc/default/docker
-    content: |
-      DOCKER_OPTS=""
-  - path: /etc/docker/daemon.json
-    content: |
-      {
-        "dns": [ "8.8.8.8", "8.8.4.4" ],
-        "hosts": [ "0.0.0.0:2376", "unix:///var/run/docker.sock" ],
-        "tls": true,
-        "tlsverify": true,
-        "tlscacert": "/etc/docker/ca.pem",
-        "tlscert": "/etc/docker/server-cert.pem",
-        "tlskey": "/etc/docker/server-key.pem"
-      }
-  - path: /etc/docker/ca.pem
-    encoding: b64
-    content: {{ .CACert | base64 }}
-  - path: /etc/docker/server-cert.pem
-    encoding: b64
-    content: {{ .TLSCert | base64 }}
-  - path: /etc/docker/server-key.pem
-    encoding: b64
-    content: {{ .TLSKey | base64 }}
+mkdir -p /etc/systemd/system/docker.service.d
+cat > /etc/systemd/system/docker.service.d/override.conf <<'EOS'
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd
+EOS
 
-runcmd:
-  - [ systemctl, daemon-reload ]
-  - [ systemctl, restart, docker ]
+cat > /etc/default/docker <<'EOS'
+# Unset all docker options as configured in
+# /etc/docker/daemon.json
+DOCKER_OPTS=""
+EOS
+
+cat > /etc/docker/daemon.json <<'EOS'
+{
+  "dns": [ "8.8.8.8", "8.8.4.4" ],
+  "hosts": [ "0.0.0.0:2376", "unix:///var/run/docker.sock" ],
+  "tls": true,
+  "tlsverify": true,
+  "tlscacert": "/etc/docker/ca.pem",
+  "tlscert": "/etc/docker/server-cert.pem",
+  "tlskey": "/etc/docker/server-key.pem"
+}
+EOS
+
+echo "{{ .CACert | base64 }}" | base64 --decode > /etc/docker/ca.pem
+echo "{{ .TLSCert | base64 }}" | base64 --decode > /etc/docker/server-cert.pem
+echo "{{ .TLSKey | base64 }}" | base64 --decode > /etc/docker/server-key.pem
+
+systemctl daemon-reload
+systemctl restart docker
 `)

@@ -82,26 +82,20 @@ func (p *provider) Create(ctx context.Context, opts autoscaler.InstanceCreateOpt
 	logger.Debug("Error is %v\n", err)
 	if linode != nil {
 		check_instance, err := client.GetInstance(ctx, linode.ID)
-		logger.Debug("Error: %v\n\n", err)
-		logger.Debug("Variable: %v\n\n", check_instance)
 		if err != nil {
 			logger.Errorln(err.Error())
 			return instance, err
 		}
 		if check_instance != nil {
-			logger.Debug("Polled Instance ID = %d\n", check_instance.ID)
 			if check_instance.Status != "running" {
 			poller:
 				for {
 					time.Sleep(3 * time.Second)
-					logger.Debug("Instance ID = %d\n", linode.ID)
 					poll_instance, err := client.GetInstance(ctx, linode.ID)
 					if err != nil {
 						logger.Errorln(err)
 						return instance, err
 					}
-					logger.Debug("Polled Instance ID = %d\n", poll_instance.ID)
-					logger.Debug("%v", poll_instance)
 					if poll_instance.Status == "running" {
 						// The server has finished provisioning
 						break poller

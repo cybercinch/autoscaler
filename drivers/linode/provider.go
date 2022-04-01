@@ -68,7 +68,7 @@ func newClient(ctx context.Context, apiKey string) *linodego.Client {
 	}
 
 	linodeClient := linodego.NewClient(oauth2Client)
-	linodeClient.SetDebug(true)
+	linodeClient.SetDebug(false)
 
 	return &linodeClient
 }
